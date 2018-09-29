@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to Nankai CTF</title>
+    <form action="{% url 'starter:index' %}" method="post">
+    {% csrf_token %}
+        <label for="user_name">USERNAME</label>
+        <input type="text" name="user_name">
+        <br />
+        <label for="password">PASSWORD</label>
+        <input type="password" name="password">
+        <br />
+        <input type="submit">
+        {% if isLogin %}
+            <span class="warning">USERNAME or PASSWORD wrong</span>
+        {% endif %}
+    </form>
+</head>
+<body>
+
+</body>
+</html>
