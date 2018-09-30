@@ -39,7 +39,7 @@ def is_valid_username(username):
 
 @csrf_exempt
 def user_signup(request):
-    if request.method == "GET":
+    if request.method == "GET" and request.GET.get("username") is not None:
         user_name = request.GET.get("username")
         if not is_valid_username(user_name):
             response_data = {
