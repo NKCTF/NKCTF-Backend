@@ -28,7 +28,7 @@ def user_login(request):
                 'code': 1,
                 'msg': "用户名或密码错误",
             }
-    return JsonResponse(response_data, json_dumps_params={'ensure_ascii':False})
+    return JsonResponse(response_data, json_dumps_params={'ensure_ascii': False})
 
 
 def is_valid_username(username):

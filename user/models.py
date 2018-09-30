@@ -27,5 +27,10 @@ class Team(models.Model):
     Name = models.CharField(max_length=32, unique=True)
     Description = models.CharField(max_length=128, default='Join our team!!')
     Leader = models.ForeignKey(Member, on_delete=models.CASCADE)
-    Join_Team = models.ManyToManyField(Member)
+
+
+class Join(models.Model):
+    WhoJoin = models.ForeignKey(Member, on_delete=models.CASCADE)
+    WhichTeam = models.ForeignKey(Team, on_delete=models.CASCADE)
+    Time = models.TimeField()
 
