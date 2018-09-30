@@ -28,7 +28,7 @@ def user_login(request):
                 'code': 1,
                 'msg': "用户名或密码错误",
             }
-    return JsonResponse(response_data)
+    return JsonResponse(response_data, json_dumps_params={'ensure_ascii':False})
 
 
 @csrf_exempt
@@ -56,4 +56,4 @@ def user_signup(request):
                 'code': 0,
                 'msg': "注册成功",
             }
-    return JsonResponse(response_data)
+    return JsonResponse(response_data, json_dumps_params={'ensure_ascii':False})
