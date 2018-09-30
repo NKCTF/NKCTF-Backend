@@ -13,7 +13,7 @@ class Question(models.Model):
         (3, "Crypto"),
         (4, "MISC"),
     )
-    Tag = models.CharField(choices=PossibleTag)
+    Tag = models.CharField(max_length=256, choices=PossibleTag)
     Name = models.CharField(max_length=32)
     Description = models.CharField(max_length=256)
     Link = models.CharField(max_length=256)

@@ -1,5 +1,3 @@
-from django.db import models
-
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
@@ -27,5 +25,5 @@ class Team(models.Model):
     Name = models.CharField(max_length=32, unique=True)
     Description = models.CharField(max_length=128, default='Join our team!!')
     Leader = models.ForeignKey(Member, on_delete=models.CASCADE)
-    Join_Team = models.ManyToManyField(Member)
+    #Join_Team = models.ManyToManyField(Member)
 
