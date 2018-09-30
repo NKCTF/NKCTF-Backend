@@ -49,6 +49,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ctfsite.middleware.JSONMiddleware',
+    'ctfsite.middleware.AllowLocalhost'
 ]
 
 ROOT_URLCONF = 'ctfsite.urls'
