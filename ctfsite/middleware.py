@@ -9,10 +9,12 @@ class AllowLocalhost:
         self.get_response = get_response
 
     def __call__(self, request):
-        url = urlparse(request.META.get('HTTP_ORIGIN'))
+        response = self.get_response(request)
+        if request.META.get('HTTP_REFERER') is None:
+            return response
+        url = urlparse(request.META.get('HTTP_REFERER'))
         refer = url.netloc
         scheme = url.scheme
-        response = self.get_response(request)
         if refer.startswith('localhost'):
             response['Access-Control-Allow-Origin'] = scheme + '://' + refer
             response['Access-Control-Allow-Headers'] = 'Content-Type'
