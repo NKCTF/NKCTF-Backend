@@ -6,11 +6,6 @@ from django.contrib.auth.models import User
 
 
 # Create your models here.
-class Team(models.Model):
-    Name = models.CharField(max_length=32, unique=True)
-    Description = models.CharField(max_length=128, default='Join our team!!')
-
-
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
@@ -26,4 +21,11 @@ class Member(models.Model):
     Github = models.CharField(max_length=32, null=True)
     Description = models.CharField(max_length=128, default='Welcome to NanKai CTF')
     Email = models.CharField(max_length=32, null=True)
-    BelongTo = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
+
+
+class Team(models.Model):
+    Name = models.CharField(max_length=32, unique=True)
+    Description = models.CharField(max_length=128, default='Join our team!!')
+    Leader = models.ForeignKey(Member, on_delete=models.CASCADE)
+    Join_Team = models.ManyToManyField(Member)
+
