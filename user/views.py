@@ -31,14 +31,34 @@ def user_login(request):
     return JsonResponse(response_data)
 
 
+def is_valid_username(username):
+    if 2 < len(username) < 16:
+        return True
+    return False
+
+
 @csrf_exempt
 def user_signup(request):
-    if request.method != "POST":
-        response_data = {
-            'code': 10,
-            'msg': "检测到攻击",
-        }
-    else:
+    if request.method == "GET":
+        user_name = request.GET.get("username")
+        if not is_valid_username(user_name):
+            response_data = {
+                'code': 1,
+                'msg': "用户名不合法",
+            }
+        else:
+            try:
+                User.objects.get(username=user_name)
+                response_data = {
+                    'code': 2,
+                    'msg': "用户名已存在",
+                }
+            except User.DoesNotExist:
+                response_data = {
+                    'code': 0,
+                    'msg': "好的",
+                }
+    elif request.method == "POST":
         user_name = request.POST.get("username")
         pass_word = request.POST.get("password")
         try:
@@ -56,4 +76,9 @@ def user_signup(request):
                 'code': 0,
                 'msg': "注册成功",
             }
+    else:
+        response_data = {
+            'code': 10,
+            'msg': "检测到攻击",
+        }
     return JsonResponse(response_data)
