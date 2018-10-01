@@ -5,6 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 
+from random import choice as random_choice
+from requests import post as send_post
+from json import loads as loads_json
+
 # TODO: 导入用于第三方登录的一些包
 from random import choice as random_choice
 from requests import post as send_post, get as send_get
@@ -193,10 +197,9 @@ def user_auth_in(request):
     client_id = 'b7bc968987af28497e2d'
     redirect_uri = url_quote(f'http://{host}/user/auth_back?type={message_type}')
     return HttpResponse(
-        f'<script>' 
+        f'<script>'
         f'  setTimeout(function(){{'
         f"    document.location = '{location_host}?client_id={client_id}"
         f"&redirect_uri={redirect_uri}&state={state}&allow_signup=false';"
         f'}}, 1000);'
         f'</script>')
-
