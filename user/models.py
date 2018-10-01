@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.contrib.auth.models import User
 
 
@@ -9,12 +6,8 @@ from django.contrib.auth.models import User
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    Auth_Offer = (
-        (1, "GitHub"),
-        (2, "QQ"),
-    )
     Auth_Token = models.CharField(max_length=32, null=True)
-    Auth_Type = models.CharField(max_length=16, choices=Auth_Offer, null=True)
+    Auth_Type = models.CharField(max_length=16, null=True)
 
     Score = models.IntegerField(default=0)
     QQ = models.CharField(max_length=16, null=True)
@@ -33,4 +26,3 @@ class Join(models.Model):
     WhoJoin = models.ForeignKey(Member, on_delete=models.CASCADE)
     WhichTeam = models.ForeignKey(Team, on_delete=models.CASCADE)
     Time = models.TimeField()
-

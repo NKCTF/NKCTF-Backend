@@ -1,84 +1,108 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+
+from random import choice as random_choice
+from requests import post as send_post
+from json import loads as loads_json
+
+
+def JsonResponseZh(json_data):
+    """
+    因为返回含中文的 Json 数据总是需要设置 {'ensure_ascii': False}，所以直接在此集成
+    :param json_data: 需要返回的数据
+    """
+    return JsonResponse(json_data, json_dumps_params={'ensure_ascii': False})
 
 
 # Create your views here.
-@csrf_exempt
-def user_login(request):
-    print(request.method)
-    if request.method != "POST":
-        response_data = {
-            'code': 10,
-            'msg': "检测到攻击",
-        }
-    else:
-        user_name = request.POST.get("username")
-        pass_word = request.POST.get("password")
-        user = authenticate(username=user_name, password=pass_word)
+@method_decorator(csrf_exempt, name="dispatch")
+class Login(View):
+    code = {
+        0: {"code": 0, "msg": "登录成功"},
+        1: {"code": 1, "msg": "用户名或密码错误"},
+        10: {"code": 10, "msg": "检测到攻击"},
+    }
+    
+    def get(self, request):
+        return JsonResponseZh(self.code[10])
+
+    def post(self, request):
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            response_data = {
-                'code': 0,
-                'msg': "登录成功",
-            }
-        else:
-            response_data = {
-                'code': 1,
-                'msg': "用户名或密码错误",
-            }
-    return JsonResponse(response_data, json_dumps_params={'ensure_ascii': False})
+            return JsonResponseZh(self.code[0])
+        else: return JsonResponseZh(self.code[1])
 
 
-def is_valid_username(username):
-    if 2 < len(username) < 16:
-        return True
-    return False
+# @method_decorator(csrf_exempt, name="dispatch")
+# class AuthLogin(View):
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class Signup(View):
+    code = {
+        "get0": {"code": 0, "msg": "好的"},
+        "post0": {"code": 0, "msg": "注册成功"},
+        1: {"code": 1, "msg": "用户名不合法"},
+        2: {"code": 2, "msg": "用户名已存在"},
+        10: {"code": 10, "msg": "检测到攻击"},
+    }
+    name_range = [2, 16]
+
+    def is_valid_username(self, username):
+        return True if (self.name_range[0] < len(username) < self.name_range[1]) else False
+
+    def get(self, request):
+        """如果是 get 方式请求，会调用这个函数"""
+        username = request.GET.get("username")
+        if not self.is_valid_username(username):
+            return JsonResponseZh(self.code[1])
+        try:
+            User.objects.get(username=username)
+            return JsonResponseZh(self.code[2])
+        except User.DoesNotExist:
+            return JsonResponseZh(self.code["get0"])
+
+    def post(self, request):
+        """如果是 post 方式请求，会调用这个函数"""
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        try:
+            User.objects.get(username=username)
+            return JsonResponseZh(self.code[2])
+        except User.DoesNotExist:
+            newer = User.objects.create(username=username)
+            newer.set_password(password)
+            newer.save()
+            return JsonResponseZh(self.code["get0"])
+
+
+def user_auth_in(request):
+    return HttpResponseRedirect("https://github.com/login/oauth/authorize\
+                         ?client_id=b7bc968987af28497e2d&\
+                         redirect_uri=/user/auth_back&\
+                         state=safe_string&allow_signup=False")
 
 
 @csrf_exempt
-def user_signup(request):
-    if request.method == "GET" and request.GET.get("username") is not None:
-        user_name = request.GET.get("username")
-        if not is_valid_username(user_name):
-            response_data = {
-                'code': 1,
-                'msg': "用户名不合法",
-            }
-        else:
-            try:
-                User.objects.get(username=user_name)
-                response_data = {
-                    'code': 2,
-                    'msg': "用户名已存在",
-                }
-            except User.DoesNotExist:
-                response_data = {
-                    'code': 0,
-                    'msg': "好的",
-                }
-    elif request.method == "POST":
-        user_name = request.POST.get("username")
-        pass_word = request.POST.get("password")
-        try:
-            User.objects.get(username=user_name)
-            response_data = {
-                'code': 2,
-                'msg': "用户名已存在",
-            }
-        except User.DoesNotExist:
-            print(user_name)
-            newer = User.objects.create(username=user_name)
-            newer.set_password(pass_word)
-            newer.save()
-            response_data = {
-                'code': 0,
-                'msg': "注册成功",
-            }
-    else:
-        response_data = {
-            'code': 10,
-            'msg': "检测到攻击",
-        }
-    return JsonResponse(response_data, json_dumps_params={'ensure_ascii':False})
+def user_auth_back(request):
+    code = request.GET.get("code")
+    post_data = {
+        "client_id": "b7bc968987af28497e2d",
+        "client_secret": "1347f0ae61ef050fbb0aafd83753a6cb677a0c1d",
+        "code": code,
+        "redirect_uri": "user/login/",
+        "state": "safe_string",
+    }
+    response = send_post("https://github.com/login/oauth/access_token/", json=post_data)
+    received_json_data = loads_json(response.content)
+    access_token = received_json_data["access_token"]
+    token_type  = received_json_data["token_type"]
+    # User.objects.create(username=)
+
