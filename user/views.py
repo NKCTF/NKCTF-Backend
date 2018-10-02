@@ -5,10 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from random import choice as random_choice
-from requests import post as send_post
-from json import loads as loads_json
-
 # TODO: 导入用于第三方登录的一些包
 from random import choice as random_choice
 from requests import post as send_post, get as send_get
