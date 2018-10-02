@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
+from base64 import b64decode
 
 # TODO: 导入用于第三方登录的一些包
 from random import choice as random_choice
@@ -85,13 +86,13 @@ class AuthLogin(View):
     def get_token(self, request):
         """从第三方服务提供方获得 token"""
         code = request.GET.get("code")
-        host = request.META.get('HTTP_HOST')
+        redirect = b64decode(request.GET.get('redirect')).decode('utf-8')
         # TODO: consume the state, if not present, don't proceed
         state = request.GET.get("state")
         post_data = {
             "client_id": self.client_id,
             "client_secret": self.client_secret,
-            "redirect_uri": f"http://{host}/user/auth_back",
+            "redirect_uri": redirect,
             "state": state, "code": code,
         }
         data = send_post(f"{self.token_host['github']}",
@@ -191,11 +192,19 @@ def user_auth_in(request):
     state = 'safe_string'
     location_host = 'https://github.com/login/oauth/authorize'
     client_id = 'b7bc968987af28497e2d'
-    redirect_uri = url_quote(f'http://{host}/user/auth_back?type={message_type}')
     return HttpResponse(
-        f'<script>'
-        f'  setTimeout(function(){{'
-        f"    document.location = '{location_host}?client_id={client_id}"
-        f"&redirect_uri={redirect_uri}&state={state}&allow_signup=false';"
-        f'}}, 1000);'
-        f'</script>')
+        f"<script>"
+        f"const url = new URL('auth_back', "
+        f"    window.location.href.replace(/\?.+$/, '').replace(/\/$/, ''));"
+        f"const keys = new URL(window.location.href).searchParams;"
+        f"for (let k of keys) {{"
+        f"  url.searchParams.append(...k);"
+        f"}}"
+        f"const uri = url.href;"
+        f"url.searchParams.append('redirect', btoa(uri));"
+        f"const redirect = encodeURIComponent(url.href);"
+        f"setTimeout(function() {{"
+        f"  document.location = `{location_host}?client_id={client_id}&redirect_uri=${{redirect}}&type={message_type}&state={state}&allow_signup=false`;"
+        f"}}, 100);"
+        f"</script>"
+    )
