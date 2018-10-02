@@ -168,3 +168,6 @@ venv.bak/
 
 # pm2
 ecosystem.config.js
+
+# secrect_key
+user/config.py

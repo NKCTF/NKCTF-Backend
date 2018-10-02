@@ -5,11 +5,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 
+# TODO: 导入用于第三方登录的一些包
 from random import choice as random_choice
 from requests import post as send_post, get as send_get
 from urllib.parse import quote as url_quote
 
 from .models import User
+# TODO: 导入用于导入 secret_key 的环境变量
+from .config import *
+from os import environ as environ_var
 
 
 def JsonResponseZh(json_data):
@@ -20,7 +24,6 @@ def JsonResponseZh(json_data):
     return JsonResponse(json_data, json_dumps_params={'ensure_ascii': False})
 
 
-# Create your views here.
 @method_decorator(csrf_exempt, name="dispatch")
 class Login(View):
     code = {
@@ -46,8 +49,8 @@ class Login(View):
 @method_decorator(csrf_exempt, name="dispatch")
 class AuthLogin(View):
     client_id = "b7bc968987af28497e2d"
-    # FIXME: 此处 secret_key 不应该放在发行版开源
-    client_secret = "secret_key"
+    # TODO: 此处 secret_key 不应该放在发行版开源
+    client_secret = environ_var.get("github_client_secret")
     token_host = {
         "github": "https://github.com/login/oauth/access_token",
     }
