@@ -7,6 +7,7 @@ from django.views import View
 
 from random import choice as random_choice
 from requests import post as send_post, get as send_get
+from urllib.parse import quote as url_quote
 
 
 def JsonResponseZh(json_data):
@@ -88,10 +89,13 @@ def user_auth_in(request):
     message_type = request.GET.get('type')
     # TODO: generate a state
     state = 'safe_string'
+    location_host = 'https://github.com/login/oauth/authorize'
+    client_id = 'b7bc968987af28497e2d'
+    redirect_uri = url_quote(f'http://{host}/user/auth_back?type={message_type}&state={state}&allow_signup=false')
     return HttpResponse(
         f'<script>' 
         f'  setTimeout(function(){{'
-        f"    document.location = 'https://github.com/login/oauth/authorize?client_id=b7bc968987af28497e2d&redirect_uri=http://{host}/user/auth_back?type={message_type}&state={state}&allow_signup=false';" 
+        f"    document.location = '{location_host}?client_id={client_id}&redirect_uri={redirect_uri}';"
         f'}}, 1000);'
         f'</script>')
 
@@ -112,9 +116,8 @@ def user_auth_back(request):
         "state": state,
     }
 
-    response = send_post("https://github.com/login/oauth/access_token/", json=post_data, headers={
-        'accept': 'application/json'
-    })
+    response = send_post("https://github.com/login/oauth/access_token/", json=post_data,
+                         headers={'accept': 'application/json'})
     received_json_data = response.json()
 
     access_token = received_json_data.get("access_token")
