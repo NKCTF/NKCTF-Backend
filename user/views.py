@@ -32,8 +32,8 @@ class Login(View):
     def post(self, request):
         username = request.POST.get("username")
         password = request.POST.get("password")
-        user = authenticate(username=username, password=password)
-        if user is not None:
+        user = authenticate(username=username)
+        if user is not None and user.check_password(password):
             login(request, user)
             return JsonResponseZh(self.code[0])
         else:
