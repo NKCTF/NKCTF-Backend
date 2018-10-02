@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class User(AbstractUser):
     """从 Django 系统定义的抽象基类 AbstractUser 派生出我们自己的类"""
-    Auth_ID = models.IntegerField(unique=True)
+    Auth_ID = models.IntegerField(unique=True, null=True)
     Auth_Type = models.CharField(max_length=16, null=True)
 
     Score = models.IntegerField(default=0)
