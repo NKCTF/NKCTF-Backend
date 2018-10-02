@@ -85,12 +85,13 @@ class Signup(View):
 
 def user_auth_in(request):
     host = request.META.get('HTTP_HOST')
+    message_type = request.GET.get('type')
     # TODO: generate a state
     state = 'safe_string'
     return HttpResponse(
         f'<script>' 
         f'  setTimeout(function(){{'
-        f"    document.location = 'https://github.com/login/oauth/authorize?client_id=b7bc968987af28497e2d&redirect_uri=http://{host}/user/auth_back&state={state}&allow_signup=false';" 
+        f"    document.location = 'https://github.com/login/oauth/authorize?client_id=b7bc968987af28497e2d&redirect_uri=http://{host}/user/auth_back?type={message_type}&state={state}&allow_signup=false';" 
         f'}}, 1000);'
         f'</script>')
 
@@ -101,6 +102,7 @@ def user_auth_back(request):
     host = request.META.get('HTTP_HOST')
     # TODO: consume the state, if not present, don't proceed
     state = request.GET.get("state")
+    message_type = request.GET.get('type')
 
     post_data = {
         "client_id": "b7bc968987af28497e2d",
@@ -119,14 +121,15 @@ def user_auth_back(request):
     token_type = received_json_data.get("token_type")
 
     if access_token is None or token_type is None:
+        print(received_json_data)
         error = received_json_data.get("error")
         return HttpResponse(
             f'<script>'
-            f'  window.caller.postMessage({{'
-            f'    type: mtGithub,'
+            f'  window.opener.postMessage({{'
+            f'    type: "{message_type}",'
             f'    code: 1,'
             f'    error: {error} '
-            f'  }}, window.caller.location.href'
+            f'  }}, "*"'
             f')'
             f'</script>')
 
@@ -145,7 +148,7 @@ def user_auth_back(request):
     return HttpResponse(
         f'<script>'
         f'  window.opener.postMessage({{'
-        f'    type: "mtGithub",'
+        f'    type: "{message_type}",'
         f'    code: 0,'
         f'    data: {data_str} '
         f'  }}, "*"'
