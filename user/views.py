@@ -113,7 +113,8 @@ class AuthLogin(View):
         data = response.json()
         self.auth_id = data.get("id")
         self.username = data.get("login")
-        self.email = data.get("email")
+        self.email = data.get("email") or "not_open@github.com"
+        print(self.email)
 
     def get(self, request):
         self.message_type = request.GET.get('type')
