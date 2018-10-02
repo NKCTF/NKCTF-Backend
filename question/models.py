@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 
-from user.models import Member
+from user.models import User
 
 
 # Create your models here.
@@ -30,6 +30,6 @@ class Question(models.Model):
 
 
 class Solve(models.Model):
-    WhoSolve = models.ForeignKey(Member, on_delete=models.CASCADE)
+    WhoSolve = models.ForeignKey(User, on_delete=models.CASCADE)
     WhichQuestion = models.ForeignKey(Question, on_delete=models.CASCADE)
     Time = models.TimeField()
