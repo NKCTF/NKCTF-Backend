@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AuthResult</title>
+    <script>
+        alert("{{ msg }}")
+        window.opener.postMessage({
+            type: "{{ type }}",
+            code: {{ code }},
+            msg: "{{ msg }}",
+            error: "{{ error }}",
+            data: {
+                username: "{{ username }}",
+                email: "{{ email }}",
+            }
+        }, "*")
+    </script>
+</head>
+<body>
+
+</body>
+</html>

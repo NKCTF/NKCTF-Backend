@@ -1,6 +1,6 @@
+from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -8,6 +8,8 @@ from django.views import View
 from random import choice as random_choice
 from requests import post as send_post, get as send_get
 from urllib.parse import quote as url_quote
+
+from .models import User
 
 
 def JsonResponseZh(json_data):
@@ -33,16 +35,111 @@ class Login(View):
     def post(self, request):
         username = request.POST.get("username")
         password = request.POST.get("password")
-        user = authenticate(username=username)
-        if user is not None and user.check_password(password):
+        user = authenticate(username=username, password=password)
+        if user is not None:
             login(request, user)
             return JsonResponseZh(self.code[0])
         else:
             return JsonResponseZh(self.code[1])
 
 
-# @method_decorator(csrf_exempt, name="dispatch")
-# class AuthLogin(View):
+@method_decorator(csrf_exempt, name="dispatch")
+class AuthLogin(View):
+    client_id = "b7bc968987af28497e2d"
+    # FIXME: 此处 secret_key 不应该放在发行版开源
+    client_secret = "secret_key"
+    token_host = {
+        "github": "https://github.com/login/oauth/access_token",
+    }
+    api_host = {
+        "github": "https://api.github.com/user",
+    }
+    access_token = token_type = error = message_type = None
+    auth_id = username = email = None
+
+    def render_context(self, code):
+        """通过 code 返回一个渲染的参数列表"""
+        return {
+            0: {
+                "type": self.message_type,
+                "code": 0,
+                "msg": "验证登录成功",
+                "username": self.username,
+                "email": self.email,
+            },
+            1: {
+                "type": self.message_type,
+                "code": 1,
+                "msg": "发生错误",
+                "error": self.error,
+            },
+            10: {
+                "code": 10,
+                "msg": "检测到攻击",
+            }
+        }[code]
+
+    def get_token(self, request):
+        """从第三方服务提供方获得 token"""
+        code = request.GET.get("code")
+        host = request.META.get('HTTP_HOST')
+        # TODO: consume the state, if not present, don't proceed
+        state = request.GET.get("state")
+        post_data = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "redirect_uri": f"http://{host}/user/auth_back",
+            "state": state, "code": code,
+        }
+        data = send_post(f"{self.token_host['github']}",
+                         json=post_data, headers={"accept": "application/json"}).json()
+
+        self.access_token = data.get("access_token")
+        self.token_type = data.get("token_type")
+        self.error = data.get("error")
+        pass
+
+    def get_user_msg(self):
+        """根据得到的 token 获取用户的信息"""
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'token {self.access_token}'
+        }
+        response = send_get(self.api_host["github"], headers=headers)
+        data = response.json()
+        self.auth_id = data.get("id")
+        self.username = data.get("login")
+        self.email = data.get("email")
+
+    def get(self, request):
+        self.message_type = request.GET.get('type')
+        self.get_token(request)
+        self.get_user_msg()
+        if self.error is not None:
+            # TODO: 若果返回了错误,则渲染错误界面
+            return render(request, "auth/result.html", self.render_context(1))
+        try:
+            # TODO: 根据 auth_id 查找用户, 如果存在直接登录用户
+            user = User.objects.get(Auth_ID=self.auth_id, Auth_Type=self.token_type)
+            login(request, user)
+        except User.DoesNotExist:
+            # TODO: 如果用户不存在, 穷举找到一个合法的用户名插入数据库, 并登录用户
+            try:
+                User.objects.get(username=self.username)
+                number = 0
+                while True:
+                    User.objects.get(username=self.username + str(number))
+                    number = number + 1
+            except User.DoesNotExist:
+                newer = User(username=self.username, email=self.email,
+                             Auth_ID=self.auth_id, Auth_Type=self.token_type)
+                newer.save()
+                login(request, newer)
+        # TODO: 渲染成功界面
+        return render(request, "auth/result.html", self.render_context(0))
+
+    def post(self, request):
+        return render(request, "auth/result.html", self.render_context(10))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -91,69 +188,12 @@ def user_auth_in(request):
     state = 'safe_string'
     location_host = 'https://github.com/login/oauth/authorize'
     client_id = 'b7bc968987af28497e2d'
-    redirect_uri = url_quote(f'http://{host}/user/auth_back?type={message_type}&state={state}&allow_signup=false')
+    redirect_uri = url_quote(f'http://{host}/user/auth_back?type={message_type}')
     return HttpResponse(
         f'<script>' 
         f'  setTimeout(function(){{'
-        f"    document.location = '{location_host}?client_id={client_id}&redirect_uri={redirect_uri}';"
+        f"    document.location = '{location_host}?client_id={client_id}"
+        f"&redirect_uri={redirect_uri}&state={state}&allow_signup=false';"
         f'}}, 1000);'
         f'</script>')
 
-
-@csrf_exempt
-def user_auth_back(request):
-    code = request.GET.get("code")
-    host = request.META.get('HTTP_HOST')
-    # TODO: consume the state, if not present, don't proceed
-    state = request.GET.get("state")
-    message_type = request.GET.get('type')
-
-    post_data = {
-        "client_id": "b7bc968987af28497e2d",
-        "client_secret": "1347f0ae61ef050fbb0aafd83753a6cb677a0c1d",
-        "code": code,
-        "redirect_uri": f"http://{host}/user/auth_back",
-        "state": state,
-    }
-
-    response = send_post("https://github.com/login/oauth/access_token/", json=post_data,
-                         headers={'accept': 'application/json'})
-    received_json_data = response.json()
-
-    access_token = received_json_data.get("access_token")
-    token_type = received_json_data.get("token_type")
-
-    if access_token is None or token_type is None:
-        print(received_json_data)
-        error = received_json_data.get("error")
-        return HttpResponse(
-            f'<script>'
-            f'  window.opener.postMessage({{'
-            f'    type: "{message_type}",'
-            f'    code: 1,'
-            f'    error: {error} '
-            f'  }}, "*"'
-            f')'
-            f'</script>')
-
-    response = send_get("https://api.github.com/user", headers={
-        'Accept': 'application/json',
-        'Authorization': f'token {access_token}'
-    })
-    received_json_data = response.json()
-
-    ghUsername = received_json_data.get('login')
-    ghRealname = received_json_data.get('name')
-    ghEmail = received_json_data.get('email')
-    print(received_json_data)
-    # User.objects.create(username=)
-    data_str = f'{{ username: "{ghUsername}", email: "{ghEmail}" }}'
-    return HttpResponse(
-        f'<script>'
-        f'  window.opener.postMessage({{'
-        f'    type: "{message_type}",'
-        f'    code: 0,'
-        f'    data: {data_str} '
-        f'  }}, "*"'
-        f')'
-        f'</script>')
