@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
@@ -6,8 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 
 from random import choice as random_choice
-from requests import post as send_post
-from json import loads as loads_json
+from requests import post as send_post, get as send_get
 
 
 def JsonResponseZh(json_data):
@@ -26,7 +25,7 @@ class Login(View):
         1: {"code": 1, "msg": "用户名或密码错误"},
         10: {"code": 10, "msg": "检测到攻击"},
     }
-    
+
     def get(self, request):
         return JsonResponseZh(self.code[10])
 
@@ -37,7 +36,8 @@ class Login(View):
         if user is not None:
             login(request, user)
             return JsonResponseZh(self.code[0])
-        else: return JsonResponseZh(self.code[1])
+        else:
+            return JsonResponseZh(self.code[1])
 
 
 # @method_decorator(csrf_exempt, name="dispatch")
@@ -84,25 +84,70 @@ class Signup(View):
 
 
 def user_auth_in(request):
-    return HttpResponseRedirect("https://github.com/login/oauth/authorize\
-                         ?client_id=b7bc968987af28497e2d&\
-                         redirect_uri=/user/auth_back&\
-                         state=safe_string&allow_signup=False")
+    host = request.META.get('HTTP_HOST')
+    # TODO: generate a state
+    state = 'safe_string'
+    return HttpResponse(
+        f'<script>' 
+        f'  setTimeout(function(){{'
+        f"    document.location = 'https://github.com/login/oauth/authorize?client_id=b7bc968987af28497e2d&redirect_uri=http://{host}/user/auth_back&state={state}&allow_signup=false';" 
+        f'}}, 1000);'
+        f'</script>')
 
 
 @csrf_exempt
 def user_auth_back(request):
     code = request.GET.get("code")
+    host = request.META.get('HTTP_HOST')
+    # TODO: consume the state, if not present, don't proceed
+    state = request.GET.get("state")
+
     post_data = {
         "client_id": "b7bc968987af28497e2d",
         "client_secret": "1347f0ae61ef050fbb0aafd83753a6cb677a0c1d",
         "code": code,
-        "redirect_uri": "user/login/",
-        "state": "safe_string",
+        "redirect_uri": f"http://{host}/user/auth_back",
+        "state": state,
     }
-    response = send_post("https://github.com/login/oauth/access_token/", json=post_data)
-    received_json_data = loads_json(response.content)
-    access_token = received_json_data["access_token"]
-    token_type  = received_json_data["token_type"]
-    # User.objects.create(username=)
 
+    response = send_post("https://github.com/login/oauth/access_token/", json=post_data, headers={
+        'accept': 'application/json'
+    })
+    received_json_data = response.json()
+
+    access_token = received_json_data.get("access_token")
+    token_type = received_json_data.get("token_type")
+
+    if access_token is None or token_type is None:
+        error = received_json_data.get("error")
+        return HttpResponse(
+            f'<script>'
+            f'  window.caller.postMessage({{'
+            f'    type: mtGithub,'
+            f'    code: 1,'
+            f'    error: {error} '
+            f'  }}, window.caller.location.href'
+            f')'
+            f'</script>')
+
+    response = send_get("https://api.github.com/user", headers={
+        'Accept': 'application/json',
+        'Authorization': f'token {access_token}'
+    })
+    received_json_data = response.json()
+
+    ghUsername = received_json_data.get('login')
+    ghRealname = received_json_data.get('name')
+    ghEmail = received_json_data.get('email')
+    print(received_json_data)
+    # User.objects.create(username=)
+    data_str = f'{{ username: "{ghUsername}", email: "{ghEmail}" }}'
+    return HttpResponse(
+        f'<script>'
+        f'  window.opener.postMessage({{'
+        f'    type: "mtGithub",'
+        f'    code: 0,'
+        f'    data: {data_str} '
+        f'  }}, "*"'
+        f')'
+        f'</script>')
