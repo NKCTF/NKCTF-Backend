@@ -46,12 +46,12 @@ class Password(View):
         self.result["symbol_error"] = re.search(r"[ !#$%&'()*+,-./[\\\]^_`{|}~" + r'"]', self.password) is None  # TODO: searching for symbols
         self.result["name_similar"] = re.search(self.username, self.password) is not None  # TODO: searching for username
         # TODO: 如果 result 中的所有值为 False, code = 0, 否则为 1
-        self.code = 0 if ([v for v in self.result.values() if v] == []) else 1
+        return 0 if ([v for v in self.result.values() if v] == []) else 1
 
     def post(self, request):
         self.username = request.POST.get("username")
         self.password = request.POST.get("password")
-        self.check()
+        self.code = self.check()
         return JsonResponseZh(self.get_ret_dict())
 
     def get(self, request):
@@ -89,7 +89,7 @@ class Username(View):
         except User.DoesNotExist:
             self.result["user_exist"] = False
         self.result["is_reserved"] = self.username in self.banned_username
-        self.code = 0 if ([v for v in self.result.values() if v] == []) else 1
+        return 0 if ([v for v in self.result.values() if v] == []) else 1
 
     def post(self, request):
         self.code = 10
@@ -97,5 +97,5 @@ class Username(View):
 
     def get(self, request):
         self.username = request.GET.get("username")
-        self.check()
+        self.code = self.check()
         return JsonResponseZh(self.get_ret_dict())
