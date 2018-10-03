@@ -9,6 +9,4 @@ urlpatterns = [
     path("signup/", views.Signup.as_view(), name="signup"),
     path("auth_in/", views.user_auth_in, name="auth_in"),
     path("auth_back/", views.AuthLogin.as_view(), name="auth_back"),
-    path("u_scoreboard/", views.Signup.as_view(), name="u_scoreboard"),
-    path("t_scoreboard/", views.Signup.as_view(), name="t_scoreboard"),
 ]

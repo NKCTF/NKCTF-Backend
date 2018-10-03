@@ -18,12 +18,9 @@ class User(AbstractUser):
     QQ = models.CharField(max_length=16, null=True)
     Github = models.CharField(max_length=32, null=True)
     Description = models.CharField(max_length=128, default='Welcome to NanKai CTF')
-    belong = models.ForeignKey(Team, on_delete=models.CASCADE)
 
-    Join_Team = models.ManyToManyField(Team, through="Join")
+    Belong = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
 
-
-class Join(models.Model):
     PossibleDirection = (
         (0, "WEB, 网络"),
         (1, "PWN, 二进制"),
@@ -32,8 +29,6 @@ class Join(models.Model):
         (4, "MISC, 杂项"),
         (5, "Almighty, 万精油")
     )
-    Career = models.CharField(max_length=32, choices=PossibleDirection)
-    WhoJoin = models.ForeignKey(User, on_delete=models.CASCADE)
-    WhichTeam = models.ForeignKey(Team, on_delete=models.CASCADE)
-    WhenJoin = models.DateField()
-    IsLeader = models.BooleanField(default=False)
+    Career = models.CharField(max_length=32, choices=PossibleDirection, null=True)
+    JoinDate = models.DateField(null=True)
+    IsLeader = models.BooleanField(default=False, null=True)

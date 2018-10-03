@@ -5,8 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from base64 import b64decode
-from django.core import serializers
-from django.db.models import F, FloatField, Sum
 
 # TODO: 导入用于第三方登录的一些包
 from random import choice as random_choice
@@ -211,44 +209,4 @@ def user_auth_in(request):
         f"}}, 100);"
         f"</script>"
     )
-
-
-@csrf_exempt
-def u_scoreboard(request):
-    print(request.method)
-    from user import models
-    u_board = models.User.objects.all().order_by("Score")
-    data = serializers.serialize('json', u_board)
-    if u_board is not None:
-        response_data = {
-            'code': 0,
-            'msg': "用户排名",
-            'data': data,
-        }
-    else:
-        response_data = {
-            'code': 1,
-            'msg': "用户排名查询失败",
-        }
-    return JsonResponse(response_data)
-
-
-@csrf_exempt
-def t_scoreboard(request):
-    print(request.method)
-    from user import models
-    t_board = models.User.objects.values_list('belong').aggregate(sum('Score')).order_by(sum('Score'))
-    data = serializers.serialize('json', t_board)
-    if t_board is not None:
-        response_data = {
-            'code': 0,
-            'msg': "战队排名",
-            'data': data,
-        }
-    else:
-        response_data = {
-            'code': 1,
-            'msg': "战队排名查询失败",
-        }
-    return JsonResponse(response_data)
 

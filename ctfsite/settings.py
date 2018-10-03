@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'scoreboard.apps.ScoreboardConfig',
     'user.apps.UserConfig',
     'question.apps.QuestionConfig',
     'django.contrib.admin',
