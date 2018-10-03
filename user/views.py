@@ -150,27 +150,15 @@ class AuthLogin(View):
 @method_decorator(csrf_exempt, name="dispatch")
 class Signup(View):
     code = {
-        "get0": {"code": 0, "msg": "好的"},
-        "post0": {"code": 0, "msg": "注册成功"},
+        0: {"code": 0, "msg": "注册成功"},
         1: {"code": 1, "msg": "用户名不合法"},
         2: {"code": 2, "msg": "用户名已存在"},
         10: {"code": 10, "msg": "检测到攻击"},
     }
-    name_range = [2, 16]
-
-    def is_valid_username(self, username):
-        return True if (self.name_range[0] < len(username) < self.name_range[1]) else False
 
     def get(self, request):
         """如果是 get 方式请求，会调用这个函数"""
-        username = request.GET.get("username")
-        if not self.is_valid_username(username):
-            return JsonResponseZh(self.code[1])
-        try:
-            User.objects.get(username=username)
-            return JsonResponseZh(self.code[2])
-        except User.DoesNotExist:
-            return JsonResponseZh(self.code["get0"])
+        return JsonResponseZh(self.code[10])
 
     def post(self, request):
         """如果是 post 方式请求，会调用这个函数"""
