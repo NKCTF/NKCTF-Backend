@@ -2,10 +2,9 @@ import json
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core import serializers
 from django.contrib.auth.decorators import login_required
 from user.models import User, Team, Career
-from django.db.models import F, FloatField, Sum
+from django.db.models import F, FloatField, Sum, Count
 
 
 def JsonResponseZh(json_data):
@@ -44,8 +43,12 @@ def user_score(request):
 @login_required
 @csrf_exempt
 def team_score(request):
-    t_board = User.objects.values_list('belong').aggregate(sum('score')).order_by(sum('score'))
-    data = serializers.serialize('json', t_board)
+    t_board = User.objects.values("belong").\
+        annotate(score=Sum("score"), members=Count("belong")).order_by(F("score").desc())
+    data = [{("team_name" if k == "belong" else k):  # TODO: 将 belong 属性名替换为 team_name 属性名
+            Team.objects.get(id=v).team_name  # TODO: 将战队的 id 替换成为 name 指示战队名称
+            if k == "belong" else v for k, v in value.items()}
+            for key, value in enumerate(t_board) if key < 10]  # TODO: if 条件决定返回数据量小于十个
     if t_board is not None:
         response_data = {
             'code': 0,
@@ -57,4 +60,4 @@ def team_score(request):
             'code': 1,
             'msg': "战队排名查询失败",
         }
-    return JsonResponse(response_data)
+    return JsonResponseZh(response_data)
