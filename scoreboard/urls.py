@@ -5,6 +5,6 @@ from .import views
 
 app_name = "scoreboard"
 urlpatterns = [
-    path("user/", views.user_score, name="user"),
-    path("team/", views.team_score, name="team"),
+    path("user/", views.UserScore.as_view(), name="user"),
+    path("team/", views.TeamScore.as_view(), name="team"),
 ]

@@ -1,11 +1,8 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
 from django.views import View
-from django.core import serializers
 from .models import Question, Solve
-from user.models import User
 
 
 def JsonResponseZh(json_data):
@@ -55,6 +52,7 @@ class QuestionMessage(View):
             1: {"code": 1, "msg": "该题目不存在"},
             2: {"code": 2, "msg": "请提供 question_name 参数供查询"},
             10: {"code": 10, "msg": "检测到攻击"},
+            401: {"code": 401, "msg": "未授权用户"},
         }[self.code]
 
     def query_by_name(self):
@@ -71,18 +69,19 @@ class QuestionMessage(View):
             return 1
 
     def get(self, request):
+        if not request.user.is_authenticated:
+            self.code = 401
+            return JsonResponseZh(self.get_ret_dict())
         self.q_name = request.GET.get("question_name")
         self.code = self.query_by_name() if self.q_name is not None else 2
         return JsonResponseZh(self.get_ret_dict())
 
     def post(self, request):
-        print(request.method)
         self.code = 10
         return JsonResponseZh(self.get_ret_dict())
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-@method_decorator(login_required, name="dispatch")
 class CheckFlag(View):
     crt_user = q_name = q_flag = q_obj = code = None
 
@@ -93,6 +92,7 @@ class CheckFlag(View):
         3: {"code": 3, "msg": "请提交 flag"},
         4: {"code": 4, "msg": "请求题目不存在"},
         10: {"code": 10, "msg": "检测到攻击"},
+        401: {"code": 401, "msg": "未授权用户"},
     }
 
     def check(self):
@@ -112,6 +112,8 @@ class CheckFlag(View):
             return 4
 
     def post(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponseZh(self.ret_dict[401])
         self.q_name = request.POST.get("question_name")
         self.q_flag = request.POST.get("flag")
         self.crt_user = request.user
