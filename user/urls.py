@@ -11,5 +11,6 @@ urlpatterns = [
     path("auth_back/", views.AuthLogin.as_view(), name="auth_back"),
     path("check/", include("user.check.urls")),
     path("info/", include("user.info.urls")),
-    path("search/", include("user.search.urls"))
+    path("search/", include("user.search.urls")),
+    path("alter/", include("user.alterdb.urls")),
 ]

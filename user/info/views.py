@@ -1,6 +1,4 @@
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from django.views import View
 from user.models import Team
 
@@ -43,7 +41,7 @@ class UserInformation(View):
         self.code = self.get_user_msg()
         return JsonResponseZh(self.get_ret_dict())
 
-    def post(self):
+    def post(self, request):
         self.code = 10
         return JsonResponseZh(self.get_ret_dict())
 
