@@ -27,7 +27,7 @@ def JsonResponseZh(json_data):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class Login(View):
-    code = {
+    ret_dict = {
         0: {"code": 0, "msg": "登录成功"},
         1: {"code": 1, "msg": "用户名或密码错误"},
         10: {"code": 10, "msg": "检测到攻击"},
@@ -42,9 +42,9 @@ class Login(View):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            return JsonResponseZh(self.code[0])
+            return JsonResponseZh(self.ret_dict[0])
         else:
-            return JsonResponseZh(self.code[1])
+            return JsonResponseZh(self.ret_dict[1])
 
 
 @method_decorator(csrf_exempt, name="dispatch")

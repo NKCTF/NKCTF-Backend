@@ -16,7 +16,7 @@ class Career(models.Model):
     MISC = "MISC, 杂项"
     Almighty = "Almighty, 万精油"
 
-    career_name = models.CharField(max_length=32, unique=True, primary_key=True)
+    career_name = models.CharField(max_length=16, unique=True, primary_key=True)
 
 
 class User(AbstractUser):

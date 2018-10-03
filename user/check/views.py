@@ -30,7 +30,7 @@ class Password(View):
         "lower_error": True, "symbol_error": True, "name_similar": True,
     }
 
-    def get_code(self):
+    def get_ret_dict(self):
         return {
             0: {"code": 0, "msg": "密码合法"},
             1: {"code": 1, "msg": "密码不合法",
@@ -52,11 +52,11 @@ class Password(View):
         self.username = request.POST.get("username")
         self.password = request.POST.get("password")
         self.check()
-        return JsonResponseZh(self.get_code())
+        return JsonResponseZh(self.get_ret_dict())
 
     def get(self, request):
         self.code = 10
-        return JsonResponseZh(self.get_code())
+        return JsonResponseZh(self.get_ret_dict())
 
 
 class Username(View):
@@ -73,7 +73,7 @@ class Username(View):
         "is_reserved": True,
     }
 
-    def get_code(self):
+    def get_ret_dict(self):
         return {
             0: {"code": 0, "msg": "用户名合法"},
             1: {"code": 1, "msg": "用户名不合法",
@@ -92,10 +92,10 @@ class Username(View):
         self.code = 0 if ([v for v in self.result.values() if v] == []) else 1
 
     def post(self, request):
-        self.username = request.POST.get("username")
-        self.check()
-        return JsonResponseZh(self.get_code())
+        self.code = 10
+        return JsonResponseZh(self.get_ret_dict())
 
     def get(self, request):
-        self.code = 10
-        return JsonResponseZh(self.get_code())
+        self.username = request.GET.get("username")
+        self.check()
+        return JsonResponseZh(self.get_ret_dict())

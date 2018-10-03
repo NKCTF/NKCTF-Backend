@@ -5,7 +5,7 @@ from . import views
 
 app_name = "question"
 urlpatterns = [
-    path("lst", views.question_lst),
-    path("msg", views.question_msg),
-    path("flag", views.question_flag)
+    path("lst", views.QuestionList.as_view()),
+    path("msg", views.QuestionMessage.as_view()),
+    path("flg", views.CheckFlag.as_view())
 ]
