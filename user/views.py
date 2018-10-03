@@ -5,8 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from base64 import b64decode
-from django.core import serializers
-from django.db.models import F, FloatField, Sum
 
 # TODO: 导入用于第三方登录的一些包
 from random import choice as random_choice
@@ -127,7 +125,7 @@ class AuthLogin(View):
             return render(request, "auth/result.html", self.render_context(1))
         try:
             # TODO: 根据 auth_id 查找用户, 如果存在直接登录用户
-            user = User.objects.get(Auth_ID=self.auth_id, Auth_Type=self.token_type)
+            user = User.objects.get(auth_id=self.auth_id, auth_type=self.token_type)
             login(request, user)
         except User.DoesNotExist:
             # TODO: 如果用户不存在, 穷举找到一个合法的用户名插入数据库, 并登录用户
@@ -139,7 +137,7 @@ class AuthLogin(View):
                     number = number + 1
             except User.DoesNotExist:
                 newer = User(username=self.username, email=self.email,
-                             Auth_ID=self.auth_id, Auth_Type=self.token_type)
+                             auth_id=self.auth_id, auth_type=self.token_type)
                 newer.save()
                 login(request, newer)
         # TODO: 渲染成功界面
@@ -211,44 +209,4 @@ def user_auth_in(request):
         f"}}, 100);"
         f"</script>"
     )
-
-
-@csrf_exempt
-def u_scoreboard(request):
-    print(request.method)
-    from user import models
-    u_board = models.User.objects.all().order_by("Score")
-    data = serializers.serialize('json', u_board)
-    if u_board is not None:
-        response_data = {
-            'code': 0,
-            'msg': "用户排名",
-            'data': data,
-        }
-    else:
-        response_data = {
-            'code': 1,
-            'msg': "用户排名查询失败",
-        }
-    return JsonResponse(response_data)
-
-
-@csrf_exempt
-def t_scoreboard(request):
-    print(request.method)
-    from user import models
-    t_board = models.User.objects.values_list('belong').aggregate(sum('Score')).order_by(sum('Score'))
-    data = serializers.serialize('json', t_board)
-    if t_board is not None:
-        response_data = {
-            'code': 0,
-            'msg': "战队排名",
-            'data': data,
-        }
-    else:
-        response_data = {
-            'code': 1,
-            'msg': "战队排名查询失败",
-        }
-    return JsonResponse(response_data)
 

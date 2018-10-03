@@ -26,10 +26,10 @@ Django 项目全部在该文件夹内，以下是关于该项目内容的一些�
 
 | 表名 | 属性                                                         |
 | ---- | ------------------------------------------------------------ |
-| User | id &rarr; int, not null, primary key, autoincrement<br />name &rarr; char(32), not null, unique<br />QQ &rarr; char(16), null<br />Description &rarr; char(128), not null<br />Email &rarr; char(32), null<br />BelongTo_id &rarr; int, null, references "user_team" ("id") deferrable initially deferred; |
-| Team | id &rarr; int, not null, primary key, autoincrement<br />name &rarr; char(32), not null, unique<br />Description &rarr; char(128), not null |
+| User | id &rarr; int, not null, primary key, autoincrement<br />name &rarr; char(32), not null, unique<br />qq &rarr; char(16), null<br />description &rarr; char(128), not null<br />Email &rarr; char(32), null<br />belongTo_id &rarr; int, null, references "user_team" ("id") deferrable initially deferred; |
+| Team | id &rarr; int, not null, primary key, autoincrement<br />name &rarr; char(32), not null, unique<br />description &rarr; char(128), not null |
 
-### `Question`
+### `question`
 
 与题目相关的数据。题目相关界面的视图。
 
