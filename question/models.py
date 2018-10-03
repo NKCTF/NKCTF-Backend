@@ -6,30 +6,30 @@ from user.models import User
 
 # Create your models here.
 class Question(models.Model):
-    PossibleTag = (
+    possible_tag = (
         (0, "WEB"),
         (1, "PWN"),
         (2, "Reverse"),
         (3, "Crypto"),
         (4, "MISC"),
     )
-    Tag = models.CharField(max_length=32, choices=PossibleTag)
-    Name = models.CharField(max_length=32)
-    Description = models.CharField(max_length=256)
-    Link = models.CharField(max_length=256)
+    tag = models.CharField(max_length=32, choices=possible_tag)
+    name = models.CharField(max_length=32)
+    description = models.CharField(max_length=256)
+    link = models.CharField(max_length=256)
 
-    Score = models.IntegerField(default=200)
-    Flag = models.CharField(max_length=32)
+    score = models.IntegerField(default=200)
+    flag = models.CharField(max_length=32)
 
     def set_flag(self, plain_text_flag):
-        self.Flag = make_password(plain_text_flag)
+        self.flag = make_password(plain_text_flag)
 
     def check_flag(self, plain_text_flag):
-        cipher_text_flag = self.Flag
+        cipher_text_flag = self.flag
         return check_password(plain_text_flag, cipher_text_flag)
 
 
 class Solve(models.Model):
-    WhoSolve = models.ForeignKey(User, on_delete=models.CASCADE)
-    WhichQuestion = models.ForeignKey(Question, on_delete=models.CASCADE)
-    Time = models.TimeField()
+    who_solve = models.ForeignKey(User, on_delete=models.CASCADE)
+    which_question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    time = models.TimeField()

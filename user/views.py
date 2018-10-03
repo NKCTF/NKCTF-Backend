@@ -125,7 +125,7 @@ class AuthLogin(View):
             return render(request, "auth/result.html", self.render_context(1))
         try:
             # TODO: 根据 auth_id 查找用户, 如果存在直接登录用户
-            user = User.objects.get(Auth_ID=self.auth_id, Auth_Type=self.token_type)
+            user = User.objects.get(auth_id=self.auth_id, auth_type=self.token_type)
             login(request, user)
         except User.DoesNotExist:
             # TODO: 如果用户不存在, 穷举找到一个合法的用户名插入数据库, 并登录用户
@@ -137,7 +137,7 @@ class AuthLogin(View):
                     number = number + 1
             except User.DoesNotExist:
                 newer = User(username=self.username, email=self.email,
-                             Auth_ID=self.auth_id, Auth_Type=self.token_type)
+                             auth_id=self.auth_id, auth_type=self.token_type)
                 newer.save()
                 login(request, newer)
         # TODO: 渲染成功界面

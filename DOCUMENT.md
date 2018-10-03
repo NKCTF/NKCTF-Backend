@@ -29,7 +29,7 @@ Note over Client (Frontend),Server (Backend): 登录请求以及响应 URL: user
 sequenceDiagram;
 Client (Frontend) ->> Server (Backend): x-www-form-urlencoded: questiontag=
 Server (Backend) -->> Client (Frontend): json:{"code":0,"msg":"题目列表","data":{..}}
-Note over Client (Frontend), Server (Backend): 根据 Tag 请求列表 URL: question/lst
+Note over Client (Frontend), Server (Backend): 根据 tag 请求列表 URL: question/lst
 
 Client (Frontend) ->> Server (Backend): x-www-form-urlencoded: questionid=
 Server (Backend) -->> Client (Frontend): json:{"code":0,"msg":"题目信息","data":{..}}
@@ -37,11 +37,11 @@ Note over Client (Frontend), Server (Backend): 根据 id 请求题目 URL: quest
 
 Client (Frontend) ->> Server (Backend): x-www-form-urlencoded: flag=
 alt check_flag True
-	Server (Backend) -->> Client (Frontend):json: {"code":0,"msg":"Flag 正确"}
+	Server (Backend) -->> Client (Frontend):json: {"code":0,"msg":"flag 正确"}
 else check_flag False
-	Server (Backend) -->> Client (Frontend):json: {"code":3,"msg":"Flag 错误"}
+	Server (Backend) -->> Client (Frontend):json: {"code":3,"msg":"flag 错误"}
 end
-Note over Client (Frontend), Server (Backend): 提交 Flag URL: question/flag
+Note over Client (Frontend), Server (Backend): 提交 flag URL: question/flag
 ```
 
 ## 用户信息

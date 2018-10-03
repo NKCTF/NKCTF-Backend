@@ -3,32 +3,36 @@ from django.contrib.auth.models import AbstractUser
 
 
 # Create your models here.
-
 class Team(models.Model):
-    Name = models.CharField(max_length=32, unique=True)
-    Description = models.CharField(max_length=128, default='Join our team!!')
+    team_name = models.CharField(max_length=32, unique=True)
+    description = models.CharField(max_length=128, default='Join our team!!')
+
+
+class Career(models.Model):
+    WEB = "WEB, 网络"
+    PWN = "PWN, 二进制"
+    Reverse = "Reverse, 逆向"
+    Crypto = "Crypto, 密码学"
+    MISC = "MISC, 杂项"
+    Almighty = "Almighty, 万精油"
+
+    career_name = models.CharField(max_length=32, unique=True, primary_key=True)
 
 
 class User(AbstractUser):
     """从 Django 系统定义的抽象基类 AbstractUser 派生出我们自己的类"""
-    Auth_ID = models.IntegerField(unique=True, null=True)
-    Auth_Type = models.CharField(max_length=16, null=True)
+    auth_id = models.IntegerField(unique=True, null=True)
+    auth_type = models.CharField(max_length=16, null=True)
 
-    Score = models.IntegerField(default=0)
-    QQ = models.CharField(max_length=16, null=True)
-    Github = models.CharField(max_length=32, null=True)
-    Description = models.CharField(max_length=128, default='Welcome to NanKai CTF')
+    score = models.IntegerField(default=0)
+    qq = models.CharField(max_length=16, null=True)
+    github = models.CharField(max_length=32, null=True)
+    description = models.CharField(max_length=128, default='Welcome to NanKai CTF')
 
-    Belong = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
+    belong = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
+    user_career = models.ForeignKey(Career, on_delete=models.SET_NULL, null=True)
 
-    PossibleDirection = (
-        (0, "WEB, 网络"),
-        (1, "PWN, 二进制"),
-        (2, "Reverse, 逆向"),
-        (3, "Crypto, 密码学"),
-        (4, "MISC, 杂项"),
-        (5, "Almighty, 万精油")
-    )
-    Career = models.CharField(max_length=32, choices=PossibleDirection, null=True)
-    JoinDate = models.DateField(null=True)
-    IsLeader = models.BooleanField(default=False, null=True)
+    join_date = models.DateField(null=True)
+    is_leader = models.BooleanField(default=False, null=True)
+
+
