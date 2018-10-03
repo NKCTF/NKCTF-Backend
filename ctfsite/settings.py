@@ -124,4 +124,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# 将 Django 认证系统的用户模型设置为自定义的 user.User 模型
 AUTH_USER_MODEL = "user.User"
+# 登录的 url_pattern 为 user/login, 在应用判定用户未登录时会指向这个 url
+LOGIN_URL = '/user/login/'
