@@ -53,4 +53,3 @@ class User(AbstractUser):
         if self.belong is not None:
             raise Exception("User have joined a team!")
         self.apply_for.add(team)
-
