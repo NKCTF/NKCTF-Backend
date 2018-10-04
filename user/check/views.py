@@ -109,7 +109,7 @@ class Username(View):
 
 class TeamName(View):
     team_name = code = None
-    banned_team_name = ["root", "admin", "superuser"]
+    banned_team_name = ["root", "admin", "superuser", "HAVEN'T JOIN YET."]
     error_msg = {
         "length_out_range": "战队应该在 6 到 18 个字符之内",
         "team_exist": "战队名已存在",
