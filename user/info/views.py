@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.views import View
-from user.models import Team
+from user.models import Team, User
 
 
 def JsonResponseZh(json_data):
@@ -30,6 +30,7 @@ class UserInformation(View):
             "qq": self.crt_user.qq,
             "github": self.crt_user.github,
             "description": self.crt_user.description,
+            "apply_for": list(self.crt_user.apply_for),
         }
         return 0
 
@@ -67,6 +68,7 @@ class TeamInformation(View):
                 "my_role": self.crt_user.user_career,
                 "join_date": self.crt_user.join_date.strftime("%H:%N:%S in %Y,%m,%d"),
                 "is_leader": self.crt_user.is_leader,
+                "application": [it.username for it in User.objects.filter(apply_for=self.t_obj)],
             }
             return 0
         except Team.DoesNotExist:

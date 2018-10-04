@@ -19,14 +19,20 @@ DragonTeam.save()
 WolfTeam = Team(team_name="Tiny Wolf", description="Welcome to tiny wolf team")
 WolfTeam.save()
 
-User_A = User(username="A", score=10, belong=DragonTeam, user_career=C1, is_leader=True)
+User_A = User(username="A", score=10, belong=DragonTeam,
+              user_career=C1, is_leader=True)
 User_A.save()
 User_B = User(username="B", score=20, belong=DragonTeam, user_career=C4)
 User_B.save()
 User_C = User(username="C", score=5, belong=DragonTeam, user_career=C2)
 User_C.save()
 
-User_D = User(username="D", score=100, belong=WolfTeam, user_career=C1, is_leader=True)
+User_D = User(username="D", score=100, belong=WolfTeam,
+              user_career=C1, is_leader=True)
 User_D.save()
 User_E = User(username="E", score=200, belong=WolfTeam, user_career=C3)
 User_E.save()
+
+User_F = User(username="F", score=1000, user_career=C1)
+User_F.save()
+User_F.apply_for.add(DragonTeam, WolfTeam)
