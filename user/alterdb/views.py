@@ -92,7 +92,6 @@ class AlterTeam(View):
             return 3
 
     def get(self, request):
-        print(request.method)
         self.code = 10
         return JsonResponseZh(self.get_ret_dict())
 
@@ -134,12 +133,12 @@ class CreateTeam(View):
     def get(self, request):
         print(request.method)
         self.code = 10
-        return JsonResponseZh(self.get_ret_dict())
+        return JsonResponseZh(self.ret_dict[self.code])
 
     def post(self, request):
         if not request.user.is_authenticated:
             self.code = 401
-            return JsonResponseZh(self.get_ret_dict())
+            return JsonResponseZh(self.ret_dict[self.code])
         self.crt_user = request.user
         self.team_name = request.POST.get("team_name")
         self.code = (self.create() if self.crt_user.belong is None else 3)\
@@ -169,12 +168,12 @@ class JoinTeam(View):
 
     def get(self, request):
         self.code = 10
-        return JsonResponseZh(self.get_ret_dict())
+        return JsonResponseZh(self.ret_dict[self.code])
 
     def post(self, request):
         if not request.user.is_authenticated:
             self.code = 401
-            return JsonResponseZh(self.get_ret_dict())
+            return JsonResponseZh(self.ret_dict[self.code])
         self.crt_user = request.user
         self.team_name = request.POST.get("team_name")
         self.code = (self.apply() if self.crt_user.belong is None else 3) \
@@ -208,12 +207,12 @@ class ExecuteApplication(View):
 
     def get(self, request):
         self.code = 10
-        return JsonResponseZh(self.get_ret_dict())
+        return JsonResponseZh(self.ret_dict[self.code])
 
     def post(self, request):
         if not request.user.is_authenticated:
             self.code = 401
-            return JsonResponseZh(self.get_ret_dict())
+            return JsonResponseZh(self.ret_dict[self.code])
         self.crt_user = request.user
         self.crt_team = self.crt_user.belong
         self.exe_username = request.POST.get("username")
