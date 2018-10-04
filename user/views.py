@@ -16,6 +16,9 @@ from .models import User
 #from .config import *
 from os import environ as environ_var
 
+# TODO: 导入检查密码和用户名的包
+import user.check.views as check
+
 
 def JsonResponseZh(json_data):
     """
@@ -27,7 +30,7 @@ def JsonResponseZh(json_data):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class Login(View):
-    code = {
+    ret_dict = {
         0: {"code": 0, "msg": "登录成功"},
         1: {"code": 1, "msg": "用户名或密码错误"},
         10: {"code": 10, "msg": "检测到攻击"},
@@ -42,9 +45,9 @@ class Login(View):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            return JsonResponseZh(self.code[0])
+            return JsonResponseZh(self.ret_dict[0])
         else:
-            return JsonResponseZh(self.code[1])
+            return JsonResponseZh(self.ret_dict[1])
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -149,41 +152,36 @@ class AuthLogin(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class Signup(View):
-    code = {
-        "get0": {"code": 0, "msg": "好的"},
-        "post0": {"code": 0, "msg": "注册成功"},
-        1: {"code": 1, "msg": "用户名不合法"},
-        2: {"code": 2, "msg": "用户名已存在"},
+    ret_dict = {
+        0: {"code": 0, "msg": "注册成功"},
+        1: {"code": 1, "msg": "用户名或密码不合法"},
         10: {"code": 10, "msg": "检测到攻击"},
     }
-    name_range = [2, 16]
+    username = password = code = None
 
-    def is_valid_username(self, username):
-        return True if (self.name_range[0] < len(username) < self.name_range[1]) else False
+    def is_valid(self):
+        u_check = check.Username(username=self.username)
+        p_check = check.Password(username=self.username, password=self.password)
+        return (u_check.check() == 0) and (p_check.check() == 0)
 
     def get(self, request):
         """如果是 get 方式请求，会调用这个函数"""
-        username = request.GET.get("username")
-        if not self.is_valid_username(username):
-            return JsonResponseZh(self.code[1])
-        try:
-            User.objects.get(username=username)
-            return JsonResponseZh(self.code[2])
-        except User.DoesNotExist:
-            return JsonResponseZh(self.code["get0"])
+        return JsonResponseZh(self.ret_dict[10])
 
     def post(self, request):
         """如果是 post 方式请求，会调用这个函数"""
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        try:
-            User.objects.get(username=username)
-            return JsonResponseZh(self.code[2])
-        except User.DoesNotExist:
-            newer = User.objects.create(username=username)
-            newer.set_password(password)
+        self.username = request.POST.get("username")
+        self.password = request.POST.get("password")
+        if self.is_valid():
+            newer = User.objects.create(username=self.username)
+            newer.set_password(self.password)
             newer.save()
-            return JsonResponseZh(self.code["get0"])
+            # TODO: 注册成功后登录用户
+            login(request, newer)
+            self.code = 0
+        else:
+            self.code = 1
+        return JsonResponseZh(self.ret_dict[self.code])
 
 
 def user_auth_in(request):

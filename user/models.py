@@ -7,6 +7,18 @@ class Team(models.Model):
     team_name = models.CharField(max_length=32, unique=True)
     description = models.CharField(max_length=128, default='Join our team!!')
 
+    def agree_apply(self, user):
+        if list(user.filter(apply_for=self)) is []:
+            raise Exception("Current user doesn't apply for this team")
+        user.apply_for.clear()
+        user.belong = self
+        user.save()
+
+    def reject_apply(self, user):
+        if list(user.filter(apply_for=self)) is []:
+            raise Exception("Current user doesn't apply for this team")
+        user.apply_for.remove(self)
+
 
 class Career(models.Model):
     WEB = "WEB, 网络"
@@ -16,7 +28,7 @@ class Career(models.Model):
     MISC = "MISC, 杂项"
     Almighty = "Almighty, 万精油"
 
-    career_name = models.CharField(max_length=32, unique=True, primary_key=True)
+    career_name = models.CharField(max_length=16, unique=True, primary_key=True)
 
 
 class User(AbstractUser):
@@ -29,10 +41,15 @@ class User(AbstractUser):
     github = models.CharField(max_length=32, null=True)
     description = models.CharField(max_length=128, default='Welcome to NanKai CTF')
 
-    belong = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
+    belong = models.ForeignKey(Team, on_delete=models.SET_NULL,
+                               related_name="work_for", null=True)
     user_career = models.ForeignKey(Career, on_delete=models.SET_NULL, null=True)
-
     join_date = models.DateField(null=True)
     is_leader = models.BooleanField(default=False, null=True)
 
+    apply_for = models.ManyToManyField(Team, related_name="apply_for")
 
+    def send_application(self, team):
+        if self.belong is not None:
+            raise Exception("User have joined a team!")
+        self.apply_for.add(team)
