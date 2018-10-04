@@ -35,6 +35,7 @@ class Password(View):
             0: {"code": 0, "msg": "密码合法"},
             1: {"code": 1, "msg": "密码不合法",
                 "error": " & ".join([v for k, v in self.error_msg.items() if self.result[k]])},
+            2: {"code": 2, "msg": "请传递密码参数"},
             10: {"code": 10, "msg": "检测到攻击"},
         }[self.code]
 
@@ -44,14 +45,19 @@ class Password(View):
         self.result["upper_error"] = re.search(r"[A-Z]", self.password) is None  # TODO: searching for uppercase
         self.result["lower_error"] = re.search(r"[a-z]", self.password) is None  # TODO: searching for lowercase
         self.result["symbol_error"] = re.search(r"[ !#$%&'()*+,-./[\\\]^_`{|}~" + r'"]', self.password) is None  # TODO: searching for symbols
-        self.result["name_similar"] = re.search(self.username, self.password) is not None  # TODO: searching for username
+        if self.username is not None:
+            # TODO: searching for username
+            self.result["name_similar"] = re.search(self.username, self.password) is not None
+        else:
+            print("Username similarity doesn't check.")
+            self.result["name_similar"] = False
         # TODO: 如果 result 中的所有值为 False, code = 0, 否则为 1
         return 0 if ([v for v in self.result.values() if v] == []) else 1
 
     def post(self, request):
         self.username = request.POST.get("username")
         self.password = request.POST.get("password")
-        self.code = self.check()
+        self.code = self.check() if self.password is not None else 2
         return JsonResponseZh(self.get_ret_dict())
 
     def get(self, request):
