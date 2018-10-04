@@ -30,7 +30,7 @@ class UserInformation(View):
             "qq": self.crt_user.qq,
             "github": self.crt_user.github,
             "description": self.crt_user.description,
-            "apply_for": list(self.crt_user.apply_for),
+            "apply_for": [it.team_name for it in self.crt_user.apply_for.all()],
         }
         return 0
 
