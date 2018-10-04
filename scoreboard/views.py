@@ -71,7 +71,7 @@ class TeamScore(View):
         # TODO; key 即列表的键，value 即为一个 query 出来的字典
         self.data = [{"team_name" if k == "belong" else k:
                      # TODO: 将 belong 属性名替换为 team_name 属性名
-                     Team.objects.get(id=v).team_name
+                     (Team.objects.get(id=v).team_name if v is not None else "HAVEN'T JOIN YET.")
                      # TODO: 将战队的 id 替换成为 name 指示战队名称
                      if k == "belong" else v for k, v in value.items()}
                      for key, value in enumerate(self.board) if key < 10]
