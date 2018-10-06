@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.views import View
 from user.models import Team, User
+from message.models import JoinRequest
 
 
 def JsonResponseZh(json_data):
@@ -30,7 +31,9 @@ class UserInformation(View):
             "qq": self.crt_user.qq,
             "github": self.crt_user.github,
             "description": self.crt_user.description,
-            "apply_for": [it.team_name for it in self.crt_user.apply_for.all()],
+            # TODO: apply_for -> JoinRequest 所有邮件中当前用户发出，目标战队的名称
+            "apply_for": [it.send_to.team_name for it in
+                          JoinRequest.objects.filter(send_by=self.crt_user)],
         }
         return 0
 
@@ -62,17 +65,19 @@ class TeamInformation(View):
     def get_team_msg(self):
         try:
             self.t_obj = Team.objects.get(id=self.crt_user.belong)
-            self.data = {
-                "team_name": self.t_obj.team_name,
-                "team_description": self.t_obj.description,
-                "my_role": self.crt_user.user_career,
-                "join_date": self.crt_user.join_date.strftime("%H:%N:%S in %Y,%m,%d"),
-                "is_leader": self.crt_user.is_leader,
-                "application": [it.username for it in User.objects.filter(apply_for=self.t_obj)],
-            }
-            return 0
         except Team.DoesNotExist:
             return 1
+        self.data = {
+            "team_name": self.t_obj.team_name,
+            "team_description": self.t_obj.description,
+            "my_role": self.crt_user.user_career,
+            "join_date": self.crt_user.join_date.strftime("%H:%N:%S in %Y,%m,%d"),
+            "is_leader": self.crt_user.is_leader,
+            # TODO: application -> JoinRequest 中所有目标为当前战队，发出用户的用户名
+            "application": [it.send_by.username for it in
+                            JoinRequest.objects.filter(send_to=self.t_obj)],
+        }
+        return 0
 
     def get(self, request):
         if not request.user.is_authenticated:

@@ -31,9 +31,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # 'scoreboard.apps.scoreboardConfig',
-    # 'user.apps.UserConfig',
-    # 'question.apps.questionConfig',
+    'scoreboard.apps.scoreboardConfig',
+    'user.apps.UserConfig',
+    'question.apps.questionConfig',
+    'message.apps.MessageConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,9 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'user',
-    'scoreboard',
-    'question',
 ]
 
 MIDDLEWARE = [

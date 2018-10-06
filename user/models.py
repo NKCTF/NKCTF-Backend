@@ -7,18 +7,6 @@ class Team(models.Model):
     team_name = models.CharField(max_length=32, unique=True)
     description = models.CharField(max_length=128, default='Join our team!!')
 
-    def agree_apply(self, user):
-        if list(user.filter(apply_for=self)) is []:
-            raise Exception("Current user doesn't apply for this team")
-        user.apply_for.clear()
-        user.belong = self
-        user.save()
-
-    def reject_apply(self, user):
-        if list(user.filter(apply_for=self)) is []:
-            raise Exception("Current user doesn't apply for this team")
-        user.apply_for.remove(self)
-
 
 class Career(models.Model):
     WEB = "WEB, 网络"
@@ -47,9 +35,17 @@ class User(AbstractUser):
     join_date = models.DateField(null=True)
     is_leader = models.BooleanField(default=False, null=True)
 
-    apply_for = models.ManyToManyField(Team, related_name="apply_for")
-
-    def send_application(self, team):
-        if self.belong is not None:
-            raise Exception("User have joined a team!")
-        self.apply_for.add(team)
+    def create_team(self, team_name, team_description=None):
+        if team_name is None:
+            raise Exception("Please provide a team name")
+        try:
+            Team.objects.get(team_name=team_name)
+            raise Exception("Team name has exist!")
+        except Team.DoesNotExist:
+            new_team = Team.objects.create(team_name=team_name,
+                 description=(team_description or f"Welcome to {team_name}"))
+            new_team.save()
+        self.belong = new_team
+        self.is_leader = True
+        self.save()
+        return new_team
