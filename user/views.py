@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -208,3 +208,10 @@ def user_auth_in(request):
         f"</script>"
     )
 
+
+def log_out(request):
+    if request.user.is_authenticated:
+        logout(request)
+        return JsonResponseZh({"code": 0, "msg": "注销成功"})
+    else:
+        return JsonResponseZh({"code": 401, "msg": "用户未登录"})
