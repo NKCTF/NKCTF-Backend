@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import datetime
 
 
 # Create your models here.
@@ -47,5 +48,6 @@ class User(AbstractUser):
             new_team.save()
         self.belong = new_team
         self.is_leader = True
+        self.join_date = datetime.now()
         self.save()
         return new_team

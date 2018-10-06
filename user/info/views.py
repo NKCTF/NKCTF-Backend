@@ -64,14 +64,14 @@ class TeamInformation(View):
 
     def get_team_msg(self):
         try:
-            self.t_obj = Team.objects.get(id=self.crt_user.belong)
+            self.t_obj = self.crt_user.belong
         except Team.DoesNotExist:
             return 1
         self.data = {
             "team_name": self.t_obj.team_name,
             "team_description": self.t_obj.description,
             "my_role": self.crt_user.user_career,
-            "join_date": self.crt_user.join_date.strftime("%H:%N:%S in %Y,%m,%d"),
+            "join_date": self.crt_user.join_date.strftime("%H:%M:%S in %Y,%m,%d"),
             "is_leader": self.crt_user.is_leader,
             # TODO: application -> JoinRequest 中所有目标为当前战队，发出用户的用户名
             "application": [it.send_by.username for it in

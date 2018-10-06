@@ -2,6 +2,7 @@
 from question.models import Tag, Question, Solve
 from user.models import User, Career, Team
 from message.models import Mail, JoinRequest
+from datetime import datetime
 
 
 T1 = Tag.objects.create(tag_name=Tag.PWN)
@@ -24,14 +25,12 @@ C5 = Career.objects.create(career_name=Career.Almighty)
 DragonTeam = Team.objects.create(team_name="Dragon", description="Welcome to Dragon team")
 WolfTeam = Team.objects.create(team_name="Tiny Wolf", description="Welcome to tiny wolf team")
 
-User_A = User.objects.create(username="A", score=10, belong=DragonTeam,
-              user_career=C1, is_leader=True)
-User_B = User.objects.create(username="B", score=20, belong=DragonTeam, user_career=C4)
-User_C = User.objects.create(username="C", score=5, belong=DragonTeam, user_career=C2)
-User_D = User.objects.create(username="D", score=100, belong=WolfTeam,
-              user_career=C1, is_leader=True)
-User_E = User.objects.create(username="E", score=200, belong=WolfTeam, user_career=C3)
-User_F = User.objects.create(username="F", score=1000, user_career=C1)
+User_A = User.objects.create(username="A", score=10, belong=DragonTeam, user_career=C1, is_leader=True, join_date=datetime.now())
+User_B = User.objects.create(username="B", score=20, belong=DragonTeam, user_career=C4, join_date=datetime.now())
+User_C = User.objects.create(username="C", score=5, belong=DragonTeam, user_career=C2, join_date=datetime.now())
+User_D = User.objects.create(username="D", score=100, belong=WolfTeam, user_career=C1, is_leader=True, join_date=datetime.now())
+User_E = User.objects.create(username="E", score=200, belong=WolfTeam, user_career=C3, join_date=datetime.now())
+User_F = User.objects.create(username="F", score=1000, user_career=C1, join_date=datetime.now())
 
 test_user = User(username="shesl-meow")
 test_user.set_password("shesl-meow+1S")

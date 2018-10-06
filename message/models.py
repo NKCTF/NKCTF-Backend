@@ -1,6 +1,6 @@
 from django.db import models
 from user.models import User, Team
-
+from datetime import datetime  # 用于设置加入队伍的时间
 
 class AbstractMail(models.Model):
     title = models.CharField(max_length=32)
@@ -40,12 +40,14 @@ class JoinRequest(AbstractMail):
         处理一个加入战队的申请
         :param is_agree: 是否同意加入战队，同意为 True，拒绝为 False
         """
+        sender = self.send_by
         # TODO: 如果发送邮件的人已经加入一个战队了，引发一个错误
-        if self.send_by.belong is not None:
+        if sender.belong is not None:
             # TODO: 如果同意了，则将发送请求的人设置为已经加入了战队
             if is_agree:
-                self.send_by.belong = self
-                self.send_by.save()
+                sender.belong = self
+                sender.join_date = datetime.now()
+                sender.save()
         else:
             raise Exception("This user has been belonged to a team.")
         # TODO: request_mail 已经读取并设置是否同意
@@ -55,7 +57,7 @@ class JoinRequest(AbstractMail):
         # TODO: 返回发送一个告知是否同意的邮件
         response_mail = Mail.objects.create(
             send_by=User.objects.get(is_leader=True, belong=self.send_to),  # send_by 本战队的队长
-            send_to=self.send_by,  # send_to request_mail 的发送人
+            send_to=sender,  # send_to request_mail 的发送人
         )
         response_mail.title = f"{self.send_to.team_name} have " \
                               f"{'agreed' if is_agree else 'refused'}" \

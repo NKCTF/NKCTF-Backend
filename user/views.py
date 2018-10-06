@@ -37,7 +37,7 @@ class Login(View):
     }
 
     def get(self, request):
-        return JsonResponseZh(self.code[10])
+        return JsonResponseZh(self.ret_dict[10])
 
     def post(self, request):
         username = request.POST.get("username")
