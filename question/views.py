@@ -99,6 +99,7 @@ class CheckFlag(View):
         2: {"code": 1, "msg": "参数错误", "error": "请提供 question_id 参数供查询"},
         3: {"code": 1, "msg": "参数错误", "error": "请提交 flag"},
         4: {"code": 1, "msg": "参数错误", "error": "请求题目不存在"},
+        5: {"code": 1, "msg": "参数错误", "error": "您已经解答过该题目"},
         10: {"code": 10, "msg": "检测到攻击"},
         401: {"code": 401, "msg": "未授权用户"},
     }
@@ -106,18 +107,22 @@ class CheckFlag(View):
     def check(self):
         try:
             self.q_obj = Question.objects.get(id=self.q_id)
-            if self.q_obj.check_flag(self.q_flag):
-                # TODO: 给当前用户添加 Score 并且建立 Solve 对象
-                self.crt_user.score = self.crt_user.score + self.q_obj.score
-                self.crt_user.save()
-                u_s_q = Solve.objects.create(who_solve=self.crt_user,
-                                             which_question=self.q_obj)
-                u_s_q.save()
-                return 0
-            else:
-                return 1
         except Question.DoesNotExist:
             return 4
+        try:
+            Solve.objects.get(who_solve=self.crt_user, which_question=self.q_obj)
+            return 5
+        except Solve.DoesNotExist:
+            pass
+        if not self.q_obj.check_flag(self.q_flag):
+            return 1
+        # TODO: 给当前用户添加 Score 并且建立 Solve 对象
+        self.crt_user.score = self.crt_user.score + self.q_obj.score
+        self.crt_user.save()
+        u_s_q = Solve.objects.create(who_solve=self.crt_user,
+                                     which_question=self.q_obj)
+        u_s_q.save()
+        return 0
 
     def post(self, request):
         if not request.user.is_authenticated:

@@ -37,3 +37,6 @@ class Solve(models.Model):
     who_solve = models.ForeignKey(User, on_delete=models.CASCADE)
     which_question = models.ForeignKey(Question, on_delete=models.CASCADE)
     time = models.TimeField(auto_now_add=True, blank=True)
+
+    class Meta:
+        unique_together = ["who_solve", "which_question"]
