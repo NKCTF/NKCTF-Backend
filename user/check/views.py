@@ -67,7 +67,7 @@ class Password(View):
 
 class Username(View):
     username = code = None
-    banned_username = ["root", "admin", "superuser"]
+    banned_username = ["root", "admin", "superuser", "NOBODY"]
     error_msg = {
         "length_out_range": "用户名应该在 6 到 18 个字符之内",
         "user_exist": "用户名已存在",

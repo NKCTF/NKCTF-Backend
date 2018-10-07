@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from message.models import JoinRequest
-from user.models import Team, User
+from user.models import Team, User, Career
 # TODO: 导入 check 包用户检测战队名是否合法
 import user.check.views as check
 
@@ -36,13 +36,20 @@ class AlterPersonal(View):
 
     def set_user_msg(self):
         try:
+            # self.error = "test error"
+            # return 3
+            print(self.target_attr, self.new_value)
             if self.target_attr not in self.allow_attr:
                 return 2
-            setattr(self.crt_user, self.target_attr, self.new_value)
-            self.ctr_user.save()
+            if self.target_attr == "user_career":
+                self.crt_user.user_career = Career.objects.get(career_name=self.new_value)
+            else:
+                setattr(self.crt_user, self.target_attr, self.new_value)
+            self.crt_user.save()
             return 0
         except Exception as e:
             self.error = str(e)
+            print(e)
             return 3
 
     def get(self, request):

@@ -27,9 +27,14 @@ class QuestionList(View):
         }[self.code]
 
     def query_by_tag(self):
-        self.q_list = Question.objects.filter(question_tag=self.q_tag). \
-            values("question_name", "score")
-        self.data = [v for k, v in enumerate(self.q_list) if k < 10]
+        self.q_list = Question.objects.filter(question_tag=self.q_tag)
+        self.data = [{
+            "question_id": question.id,
+            "question_name": question.question_name,
+            "score": question.score,
+            "solved_by": question.solve_by.all().count(),
+            "first_solved": Solve.objects.filter(which_question=question).order_by("time").first().who_solve.username or "NOBODY"
+        } for question in self.q_list]
         return 1 if self.data == [] else 0
 
     def get(self, request):
@@ -43,7 +48,7 @@ class QuestionList(View):
 
 
 class QuestionMessage(View):
-    q_name = q_info = code = data = None
+    q_id = q_info = code = data = None
 
     def get_ret_dict(self):
         return {
@@ -57,12 +62,15 @@ class QuestionMessage(View):
 
     def query_by_name(self):
         try:
-            self.q_info = Question.objects.get(question_name=self.q_name)
+            self.q_info = Question.objects.get(id=self.q_id)
             self.data = {
+                "question_id": self.q_info.id,
                 "question_name": self.q_info.question_name,
                 "description": self.q_info.description,
                 "annex_link": self.q_info.link,
                 "question_score": self.q_info.score,
+                "first_three_solved": [v.who_solve.username for k, v in
+                                       enumerate(Solve.objects.filter(which_question=self.q_info)) if k < 3]
             }
             return 0
         except Question.DoesNotExist:
@@ -72,8 +80,8 @@ class QuestionMessage(View):
         if not request.user.is_authenticated:
             self.code = 401
             return JsonResponseZh(self.get_ret_dict())
-        self.q_name = request.GET.get("question_name")
-        self.code = self.query_by_name() if self.q_name is not None else 2
+        self.q_id = request.GET.get("question_id")
+        self.code = self.query_by_name() if self.q_id is not None else 2
         return JsonResponseZh(self.get_ret_dict())
 
     def post(self, request):
@@ -83,21 +91,21 @@ class QuestionMessage(View):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class CheckFlag(View):
-    crt_user = q_name = q_flag = q_obj = code = None
+    crt_user = q_id = q_flag = q_obj = code = None
 
     ret_dict = {
         0: {"code": 0, "msg": "提交 Flag 成功"},
-        1: {"code": 1, "msg": "提交 Flag 错误"},
-        2: {"code": 2, "msg": "请提供 question_name 参数供查询"},
-        3: {"code": 3, "msg": "请提交 flag"},
-        4: {"code": 4, "msg": "请求题目不存在"},
+        1: {"code": 1, "msg": "参数错误", "error": "提交 Flag 错误"},
+        2: {"code": 1, "msg": "参数错误", "error": "请提供 question_id 参数供查询"},
+        3: {"code": 1, "msg": "参数错误", "error": "请提交 flag"},
+        4: {"code": 1, "msg": "参数错误", "error": "请求题目不存在"},
         10: {"code": 10, "msg": "检测到攻击"},
         401: {"code": 401, "msg": "未授权用户"},
     }
 
     def check(self):
         try:
-            self.q_obj = Question.objects.get(question_name=self.q_name)
+            self.q_obj = Question.objects.get(id=self.q_id)
             if self.q_obj.check_flag(self.q_flag):
                 # TODO: 给当前用户添加 Score 并且建立 Solve 对象
                 self.crt_user.score = self.crt_user.score + self.q_obj.score
@@ -114,11 +122,13 @@ class CheckFlag(View):
     def post(self, request):
         if not request.user.is_authenticated:
             return JsonResponseZh(self.ret_dict[401])
-        self.q_name = request.POST.get("question_name")
+        self.q_id = request.POST.get("question_id")
         self.q_flag = request.POST.get("flag")
         self.crt_user = request.user
+        print(self.q_id, self.q_flag)
+
         self.code = (self.check() if self.q_flag is not None else 3)\
-            if self.q_name is not None else 2
+            if self.q_id is not None else 2
         return JsonResponseZh(self.ret_dict[self.code])
 
     def get(self, request):

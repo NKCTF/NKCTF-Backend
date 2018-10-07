@@ -31,6 +31,7 @@ class UserInformation(View):
             "qq": self.crt_user.qq,
             "github": self.crt_user.github,
             "description": self.crt_user.description,
+            "user_career": self.crt_user.user_career.career_name,
             # TODO: apply_for -> JoinRequest 所有邮件中当前用户发出，目标战队的名称
             "apply_for": [it.send_to.team_name for it in
                           JoinRequest.objects.filter(send_by=self.crt_user)],
@@ -70,7 +71,7 @@ class TeamInformation(View):
         self.data = {
             "team_name": self.t_obj.team_name,
             "team_description": self.t_obj.description,
-            "my_role": self.crt_user.user_career,
+            "my_role": self.crt_user.user_career.career_name,
             "join_date": self.crt_user.join_date.strftime("%H:%M:%S in %Y,%m,%d"),
             "is_leader": self.crt_user.is_leader,
             # TODO: application -> JoinRequest 中所有目标为当前战队，发出用户的用户名
