@@ -33,7 +33,8 @@ class QuestionList(View):
             "question_name": question.question_name,
             "score": question.score,
             "solved_by": question.solve_by.all().count(),
-            "first_solved": Solve.objects.filter(which_question=question).order_by("time").first().who_solve.username or "NOBODY"
+            "first_solved": getattr(getattr(Solve.objects.filter(which_question=question).order_by("time").first(),
+                                            'who_solve',None), 'username', 'NOBODY')
         } for question in self.q_list]
         return 1 if self.data == [] else 0
 
